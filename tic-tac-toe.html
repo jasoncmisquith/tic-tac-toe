@@ -1,0 +1,285 @@
+<html>
+    <head>
+        <style>
+            .cell {
+                width:100px;
+                height:100px;
+                text-align:center;
+                font-size:80px;
+            }
+            .table {
+                margin-left:auto;
+                margin-right:auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="Player1">
+            <h2 id="Player1name"> </h2>
+            <h2 id="Player1score"> </h2>
+
+        </div>
+        <div id="Player2">
+            <h2 id="Player2name"> </h2>
+            <h2 id="Player2score"> </h2>
+
+        </div>
+
+        <table id="tic-tac-toe" class="table" border="1">
+            <tr>
+                <td id="11" class="cell"></td>
+                <td id="12" class="cell"></td>
+                <td id="13" class="cell"></td>
+            
+            </tr>
+            <tr>
+                <td id="21" class="cell"></td>
+                <td id="22" class="cell"></td>
+                <td id="23" class="cell"></td>
+            
+            </tr>
+            <tr>
+                <td id="31" class="cell"></td>
+                <td id="32" class="cell"></td>
+                <td id="33" class="cell"></td>
+
+            </tr>
+        </table>
+        <h1 id="whose-turn"></h1>
+        <button id="reset" onclick="gameReset()">RESET</button>
+
+
+        <script>
+            var table = document.getElementById("tic-tac-toe");
+            for (var i = 0, row; row = table.rows[i]; i++) {
+                for (var j = 0, col; col = row.cells[j]; j++) {
+                    col.addEventListener("click", mark);                
+                }  
+            }
+            
+            const TIC_TAC_TOE_SIZE = 3
+            
+            
+            class Player {
+                constructor(color, name, id) {
+                    this.initialize(color, name, id, 0)  // score starts with 0 when called
+                    this.displayScore();
+                    this.displayName();
+                }
+
+                initialize(color, name, id, score) {
+                    this.id = id;
+                    this.choices = [];
+                    this.row_object = {};
+                    this.col_object = {};
+                    this.pri_diagonal_count = 0;
+                    this.sec_diagonal_count = 0;
+                    this.color = color;
+                    this.name = name;
+                    this.score = score;
+                }
+
+                setSelectedId(selected_id) {
+                    var row_id = selected_id.substring(0,1);
+                    var col_id = selected_id.substring(1,2);
+                    this.choices.push(selected_id);
+                    this.setRowCount(row_id);
+                    this.setColumnCount(col_id);
+                    this.setPrincipalDiagonalCount(row_id, col_id)
+                    this.setSecondaryDiagonalCount(row_id, col_id)
+                }
+                
+
+                setRowCount(row_id) {
+                    this.row_object[row_id] = (this.row_object[row_id] || 0) + 1;
+
+                }
+                setColumnCount(col_id) {
+                    this.col_object[col_id] = (this.col_object[col_id] || 0) + 1;
+
+                }
+
+                setPrincipalDiagonalCount(row_id, col_id) {
+                    if (row_id == col_id) {
+                        this.pri_diagonal_count++;
+                    }
+
+                }
+
+                setSecondaryDiagonalCount(row_id, col_id) {
+                    row_id = Number(row_id)
+                    col_id = Number(col_id);
+                    if ((row_id + col_id) == (TIC_TAC_TOE_SIZE + 1)) {
+                        this.sec_diagonal_count++;
+                    }
+
+                }
+
+
+                hasWon() {
+                    if ((this.row_object["1"] == TIC_TAC_TOE_SIZE) || (this.row_object["2"] == TIC_TAC_TOE_SIZE) || (this.row_object["3"] == TIC_TAC_TOE_SIZE)) {
+                        return true;
+
+                    } else if ((this.col_object["1"] == TIC_TAC_TOE_SIZE) || (this.col_object["2"] == TIC_TAC_TOE_SIZE) || (this.col_object["3"] == TIC_TAC_TOE_SIZE)) {
+                        return true;
+
+                    } else if (this.pri_diagonal_count == TIC_TAC_TOE_SIZE){
+                        return true;
+
+                    } else if (this.sec_diagonal_count == TIC_TAC_TOE_SIZE){
+                        return true;
+
+                    } else {
+                        return false;
+                    }
+                    
+
+                }
+
+                updateScore() {
+                    this.score++;
+                    this.displayScore()
+                }
+
+                displayScore() {
+                    document.getElementById(this.id + "score").innerHTML = this.score;
+                }
+
+                displayName() {
+                    document.getElementById(this.id + "name").innerHTML = this.name;
+                }
+
+                reset() {
+                    this.initialize(this.color, this.name, this.id, 0)  // score starts with 0 for reset
+                    this.displayScore();
+                } 
+
+                newGame() {
+                    this.initialize(this.color, this.name, this.id, this.score);
+                }
+            }
+
+            
+            class TicTacToe {
+                constructor(){
+                    this.count = 0;
+                    var player_1_name = prompt("Enter your name Player 1");
+                    var player_2_name = prompt("Enter your name Player 2");
+
+                    this.player_1 = new Player("red", player_1_name, "Player1");
+                    this.player_2 = new Player("blue", player_2_name, "Player2");
+                    this.whoseTurn()
+                }
+
+                whoseTurn() {
+                    if(this.count % 2 == 0) {
+                        document.getElementById("whose-turn").innerHTML = this.player_1.name + "'s Turn"
+                        
+                    } else {
+                        document.getElementById("whose-turn").innerHTML = this.player_2.name + "'s Turn"
+                        
+                    }
+                }
+
+                markCell(event) {
+                    var selected_id = event.target.id;
+                    var cell_content = document.getElementById(selected_id).innerHTML   ;
+                    if(cell_content){
+                        alert("Already selected");
+                        return;
+                    }
+
+                    if(this.count % 2 == 0) {
+                        document.getElementById(selected_id).innerHTML = "O";
+                        document.getElementById(selected_id).style.backgroundColor = this.player_1.color;
+                        this.player_1.setSelectedId(selected_id);
+                        
+                        
+                    } else {
+                        document.getElementById(selected_id).innerHTML = "X";
+                        document.getElementById(selected_id).style.backgroundColor = this.player_2.color;
+                        this.player_2.setSelectedId(selected_id)
+                        
+                    }
+
+                    this.count++;
+                    setTimeout(checkGameStatus, 100);
+                }
+
+                gameEnd() {
+                    if (this.player_1.hasWon()) {
+                        this.player_1.updateScore();
+                        alert(this.player_1.name + " Wins");
+                        return true;
+
+                    } else if (this.player_2.hasWon()) {
+                        this.player_2.updateScore() 
+                        alert(this.player_2.name + " Wins");
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+
+                }
+
+                
+
+                boardReset() {
+                    var table = document.getElementById("tic-tac-toe");
+                    for (var i = 0, row; row = table.rows[i]; i++) {
+                        for (var j = 0, col; col = row.cells[j]; j++) {
+                            col.innerHTML = ""
+                            col.style.backgroundColor = ""
+                        
+                        }  
+                    }
+                }
+
+                reset() {
+                    this.player_1.reset();
+                    this.player_2.reset();
+                    this.boardReset();
+                    
+                }
+
+                newGame() {
+                    this.boardReset();
+                    this.player_1.newGame();
+                    this.player_2.newGame();
+
+                }
+            }
+            var game_obj = new TicTacToe();
+
+            function mark(selected_id) {
+                game_obj.markCell(selected_id);
+                game_obj.whoseTurn();
+
+            }
+
+            function checkGameStatus() {
+                if (game_obj.gameEnd()) {
+                    setTimeout(playAgain, 1000);
+                }
+            }
+
+            function playAgain() {
+                if (confirm("New game?")) {
+                    game_obj.newGame();
+                } else {
+                    game_obj.reset();
+                }
+            }
+
+            function gameReset() {
+                game_obj.reset();
+                game_obj.whoseTurn();
+
+            }
+        
+            
+            
+        </script>
+    </body>
+</html>
